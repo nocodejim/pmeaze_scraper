@@ -87,12 +87,45 @@ The scraper automatically installs:
 - `tqdm` - Progress bars
 - `lxml` - Fast XML/HTML parser
 
-## Next Steps
+## Next Steps: Interactive RAG Agent
 
-After scraping, you can:
-1. **Use the combined files** (`all_content.json` or `all_content.txt`) as input for RAG systems
-2. **Build an interactive agent** that can answer questions about QuickBuild
-3. **Create embeddings** from the structured content for vector search
+After scraping, you can build an AI agent that answers questions about QuickBuild:
+
+### 1. Setup RAG System
+```bash
+# Install RAG dependencies
+source venv/bin/activate
+pip3 install -r rag_system/requirements.txt
+```
+
+### 2. Test Performance (Recommended First Step)
+```bash
+# Test your machine's performance with a single page
+python3 rag_system/simple_rag.py
+
+# Run with interactive mode for manual testing
+python3 rag_system/simple_rag.py --interactive
+```
+
+### 3. Run Full RAG Agent
+```bash
+# Interactive mode - ask questions continuously
+python3 rag_system/rag_agent.py
+
+# Single question mode
+python3 rag_system/rag_agent.py --question "How do I add a step to an existing configuration?"
+```
+
+### Example Questions the Agent Can Answer:
+- "How do I add a step to an existing configuration?"
+- "What are the different types of build triggers?"
+- "How do I set up email notifications for failed builds?"
+- "What's the difference between build configurations and build steps?"
+
+### Performance Notes:
+- **First run**: Downloads models (~350MB), takes 20-30 seconds
+- **Subsequent runs**: Uses cached models, starts in 2-3 seconds
+- **Processing**: Answers questions in ~0.1 seconds on modern hardware
 
 ## Troubleshooting
 

@@ -14,6 +14,103 @@ This document provides a comprehensive guide to the enhanced QuickBuild document
 
 ---
 
+## RAG System Setup and Usage
+
+### Quick Setup
+```bash
+# After scraping is complete
+source venv/bin/activate
+pip3 install -r rag_system/requirements.txt
+```
+
+### Performance Testing (Recommended First Step)
+Before using the full system, test your machine's capabilities:
+
+```bash
+# Basic performance test
+python3 rag_system/simple_rag.py
+
+# Interactive testing with a single page
+python3 rag_system/simple_rag.py --interactive
+```
+
+**Expected Performance (First Run):**
+- Model loading: 20-30 seconds (downloads ~350MB of models)
+- Embedding speed: 10-20 per second
+- QA speed: 0.1-0.2 seconds per question
+
+**Subsequent Runs:**
+- Model loading: 2-3 seconds (uses cached models)
+- Processing speeds remain the same
+
+### Full RAG Agent Usage
+
+**Interactive Mode (Recommended):**
+```bash
+python3 rag_system/rag_agent.py
+```
+
+**Single Question Mode:**
+```bash
+python3 rag_system/rag_agent.py --question "How do I configure build notifications?"
+```
+
+**Advanced Options:**
+```bash
+# Use different embedding model
+python3 rag_system/rag_agent.py --model "all-mpnet-base-v2"
+
+# Retrieve more context documents
+python3 rag_system/rag_agent.py --top-k 5 --question "Your question here"
+```
+
+### RAG System Architecture
+
+The system uses:
+1. **sentence-transformers** for creating embeddings of documentation sections
+2. **FAISS** for fast similarity search across embedded content
+3. **transformers** for question-answering on retrieved context
+4. **CPU-optimized models** that work on AMD/Intel systems without GPU requirements
+
+### Example Questions and Expected Results
+
+**Configuration Questions:**
+- "How do I add a step to an existing configuration?"
+- "What are the different step types available?"
+- "How do I configure conditional step execution?"
+
+**Workflow Questions:**
+- "How do I set up automated builds?"
+- "What triggers are available for builds?"
+- "How do I configure build notifications?"
+
+**Administration Questions:**
+- "How do I manage user permissions?"
+- "What are the backup and restore procedures?"
+- "How do I configure LDAP authentication?"
+
+### Troubleshooting RAG System
+
+**Model Download Issues:**
+```bash
+# Clear model cache and retry
+rm -rf ~/.cache/huggingface/
+python3 rag_system/simple_rag.py
+```
+
+**Memory Issues:**
+```bash
+# Use smaller model
+python3 rag_system/rag_agent.py --model "all-MiniLM-L6-v2"
+```
+
+**Slow Performance:**
+- First run is always slower (model downloads)
+- Ensure you're using CPU-optimized versions (faiss-cpu, not faiss-gpu)
+- Consider closing other applications during processing
+
+---
+
 ## Project Overview
 
 This enhanced scraper extracts the complete QuickBuild documentation from `https://wiki.pmease.com/display/QB14` and creates structured output suitable for RAG (Retrieval-Augmented Generation) systems and AI agents.

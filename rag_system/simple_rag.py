@@ -188,7 +188,7 @@ class SimpleRAGTester:
         print(f"   Questions: {len([r for r in qa_results if 'error' not in r])/sum(r.get('time', 0) for r in qa_results):.1f} per second")
         
         print(f"\n💻 System Recommendations:")
-        if embedding_load_time < 10:
+        if embedding_load_time < 25:  # Adjusted for first-time download
             print("   ✅ Good model loading speed")
         else:
             print("   ⚠️  Slow model loading - consider smaller models")
@@ -199,10 +199,12 @@ class SimpleRAGTester:
             print("   ⚠️  Slow embeddings - consider CPU optimization")
         
         avg_qa_time = sum(r.get('time', 0) for r in qa_results) / len(qa_results)
-        if avg_qa_time < 2:
+        if avg_qa_time < 0.2:  # Adjusted threshold
             print("   ✅ Good QA speed")
         else:
             print("   ⚠️  Slow QA - consider lighter models")
+        
+        print(f"\n📝 Note: First run includes model downloads. Subsequent runs will be much faster.")
     
     def interactive_test(self):
         """Interactive mode for manual testing."""
