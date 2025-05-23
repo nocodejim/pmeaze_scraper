@@ -1,0 +1,40 @@
+Fri May 23 12:06:39 EDT 2025 - Starting build and deploy process...
+Fri May 23 12:06:39 EDT 2025 - Creating Python virtual environment...
+Fri May 23 12:07:00 EDT 2025 - Activating virtual environment...
+Fri May 23 12:07:00 EDT 2025 - Installing dependencies from requirements.txt...
+Collecting requests (from -r requirements.txt (line 1))
+  Downloading requests-2.32.3-py3-none-any.whl.metadata (4.6 kB)
+Collecting beautifulsoup4 (from -r requirements.txt (line 2))
+  Downloading beautifulsoup4-4.13.4-py3-none-any.whl.metadata (3.8 kB)
+Collecting charset-normalizer<4,>=2 (from requests->-r requirements.txt (line 1))
+  Downloading charset_normalizer-3.4.2-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (35 kB)
+Collecting idna<4,>=2.5 (from requests->-r requirements.txt (line 1))
+  Downloading idna-3.10-py3-none-any.whl.metadata (10 kB)
+Collecting urllib3<3,>=1.21.1 (from requests->-r requirements.txt (line 1))
+  Downloading urllib3-2.4.0-py3-none-any.whl.metadata (6.5 kB)
+Collecting certifi>=2017.4.17 (from requests->-r requirements.txt (line 1))
+  Downloading certifi-2025.4.26-py3-none-any.whl.metadata (2.5 kB)
+Collecting soupsieve>1.2 (from beautifulsoup4->-r requirements.txt (line 2))
+  Downloading soupsieve-2.7-py3-none-any.whl.metadata (4.6 kB)
+Collecting typing-extensions>=4.0.0 (from beautifulsoup4->-r requirements.txt (line 2))
+  Downloading typing_extensions-4.13.2-py3-none-any.whl.metadata (3.0 kB)
+Downloading requests-2.32.3-py3-none-any.whl (64 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 64.9/64.9 kB 5.1 MB/s eta 0:00:00
+Downloading beautifulsoup4-4.13.4-py3-none-any.whl (187 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 187.3/187.3 kB 9.0 MB/s eta 0:00:00
+Downloading certifi-2025.4.26-py3-none-any.whl (159 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 159.6/159.6 kB 14.8 MB/s eta 0:00:00
+Downloading charset_normalizer-3.4.2-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (148 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 148.6/148.6 kB 10.5 MB/s eta 0:00:00
+Downloading idna-3.10-py3-none-any.whl (70 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 70.4/70.4 kB 6.0 MB/s eta 0:00:00
+Downloading soupsieve-2.7-py3-none-any.whl (36 kB)
+Downloading typing_extensions-4.13.2-py3-none-any.whl (45 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 45.8/45.8 kB 3.8 MB/s eta 0:00:00
+Downloading urllib3-2.4.0-py3-none-any.whl (128 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 128.7/128.7 kB 14.6 MB/s eta 0:00:00
+Installing collected packages: urllib3, typing-extensions, soupsieve, idna, charset-normalizer, certifi, requests, beautifulsoup4
+Successfully installed beautifulsoup4-4.13.4 certifi-2025.4.26 charset-normalizer-3.4.2 idna-3.10 requests-2.32.3 soupsieve-2.7 typing-extensions-4.13.2 urllib3-2.4.0
+Fri May 23 12:07:13 EDT 2025 - Running the scraper...
+Fri May 23 12:09:02 EDT 2025 - Deactivating virtual environment.
+Fri May 23 12:09:02 EDT 2025 - Build and deploy process finished.
