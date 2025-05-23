@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# This script sets up the environment and runs the scraper.
+# This script sets up the environment and runs the enhanced scraper.
 
 VENV_DIR="venv"
 LOG_FILE="deployment.log"
@@ -36,17 +36,42 @@ log "Installing dependencies from requirements.txt..."
 # We send the output (stdout and stderr) to the log file for inspection
 pip3 install -r requirements.txt >> $LOG_FILE 2>&1
 
-# NEW: Add a check to see what's actually installed in our environment.
+# Check what's actually installed in our environment
 log "Checking installed packages in the virtual environment..."
 pip3 list >> $LOG_FILE 2>&1
 
-# --- Run the Scraper ---
-log "Running the scraper..."
-# NEW: Use 'tee' to show Python output on screen AND append to log file
+# --- Clean Previous Output ---
+if [ -d "scraper/output" ]; then
+    log "Cleaning previous output directory..."
+    rm -rf scraper/output/*
+fi
+
+# --- Run the Enhanced Scraper ---
+log "Running the enhanced scraper..."
+# Use default settings (full scrape) - can be customized with arguments
 python3 scraper/scraper.py | tee -a $LOG_FILE
+
+# --- Verify Output ---
+if [ -f "scraper/output/all_content.json" ] && [ -f "scraper/output/all_content.txt" ]; then
+    log "SUCCESS: Combined output files created successfully."
+    log "Output structure:"
+    find scraper/output -type f | head -10 | while read file; do
+        log "  - $file"
+    done
+    
+    # Count files and show summary
+    json_count=$(find scraper/output/json -name "*.json" 2>/dev/null | wc -l)
+    text_count=$(find scraper/output/text -name "*.txt" 2>/dev/null | wc -l)
+    log "Summary: $json_count JSON files, $text_count text files created."
+else
+    log "WARNING: Expected output files not found. Check scraper output above."
+fi
 
 # --- Deactivate Virtual Environment ---
 log "Deactivating virtual environment."
 deactivate
 
 log "Build and deploy process finished."
+log "Combined files available at:"
+log "  - scraper/output/all_content.json"
+log "  - scraper/output/all_content.txt"

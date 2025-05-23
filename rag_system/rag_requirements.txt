@@ -1,0 +1,9 @@
+# RAG System Dependencies
+# These are CPU/AMD-friendly packages that don't require CUDA
+
+sentence-transformers>=2.2.0    # For embeddings (CPU-optimized)
+faiss-cpu>=1.7.0               # For vector search (CPU version)
+transformers>=4.20.0           # For QA models
+torch>=1.12.0                  # PyTorch (CPU version will be installed)
+numpy>=1.21.0                  # Required by above packages
+scikit-learn>=1.1.0            # Used by sentence-transformers

@@ -1,105 +1,454 @@
-# Documentation Scraper: Complete Guide
+# Enhanced Documentation Scraper: Complete Guide
 
-This document provides a comprehensive guide to setting up, running, and maintaining the documentation scraper.
+This document provides a comprehensive guide to the enhanced QuickBuild documentation scraper.
 
 ## Table of Contents
-1.  [Project Overview](#project-overview)
-2.  [Getting Started: Quick Start](#getting-started-quick-start)
-3.  [Detailed Setup and Execution](#detailed-setup-and-execution)
-4.  [Developer Guide](#developer-guide)
-    * [Project Structure](#project-structure)
-    * [Code Explanation](#code-explanation)
-    * [Versioning and Releases](#versioning-and-releases)
-    * [Security Considerations](#security-considerations)
+1. [Project Overview](#project-overview)
+2. [Getting Started: Quick Start](#getting-started-quick-start)
+3. [Detailed Setup and Execution](#detailed-setup-and-execution)
+4. [Output Formats and Structure](#output-formats-and-structure)
+5. [Advanced Usage](#advanced-usage)
+6. [RAG Integration Guide](#rag-integration-guide)
+7. [Developer Guide](#developer-guide)
+8. [Troubleshooting](#troubleshooting)
 
 ---
 
-### Project Overview
+## Project Overview
 
-This project provides a Python script to scrape the QuickBase documentation website (`https://wiki.pmease.com/display/QB14`). The goal is to create a local corpus of text files that can be used as a knowledge base for a support agent.
+This enhanced scraper extracts the complete QuickBuild documentation from `https://wiki.pmease.com/display/QB14` and creates structured output suitable for RAG (Retrieval-Augmented Generation) systems and AI agents.
 
----
-
-### Getting Started: Quick Start
-
-For those who want to get up and running immediately:
-
-1.  **Clone the repository:**
-    ```bash
-    git clone <your-repo-url>
-    cd <repo-name>
-    ```
-2.  **Run the build and deploy script:**
-    ```bash
-    bash build_and_deploy.sh
-    ```
-    The scraped `.txt` files will appear in the `scraper/output` directory.
+### Key Improvements
+- **Structured Content Extraction**: Preserves document sections, headers, and metadata
+- **Multiple Output Formats**: JSON for AI systems, text for simple processing
+- **Combined Files**: Ready-to-use files for RAG systems
+- **Progress Tracking**: Real-time progress indication
+- **Robust Error Handling**: Comprehensive logging and error recovery
 
 ---
 
-### Detailed Setup and Execution
+## Getting Started: Quick Start
 
-This section is for developers who want to understand the setup process in more detail.
+For immediate results:
 
-1.  **Initial Environment Setup:**
-    The `setup_environment.sh` script prepares your project.
-    ```bash
-    bash setup_environment.sh
-    ```
-    This command:
-    * Creates the `scraper/` and `scraper/output/` directories.
-    * Creates the necessary Python and documentation files.
-    * Initializes a Git repository for version control.
+```bash
+# Clone and run
+git clone <your-repo-url>
+cd <repo-name>
+bash build_and_deploy.sh
+```
 
-2.  **Building and Running the Scraper:**
-    The `build_and_deploy.sh` script handles the execution.
-    ```bash
-    bash build_and_deploy.sh
-    ```
-    This script performs the following steps:
-    * **Checks for Python:** Ensures you have `python3` and `pip3` installed.
-    * **Creates a Virtual Environment:** Creates a `venv/` directory to isolate the project's Python dependencies. This is a best practice to avoid conflicts with other Python projects on your system.
-    * **Installs Dependencies:** Reads the `requirements.txt` file and installs the `requests` and `beautifulsoup4` libraries.
-    * **Runs the Scraper:** Executes `scraper/scraper.py`.
-    * **Logs a record** of its actions in `deployment.log`.
+**Result**: Combined documentation files in `scraper/output/all_content.json` and `scraper/output/all_content.txt`
 
 ---
 
-### Developer Guide
+## Detailed Setup and Execution
 
-#### Project Structure
-.
-├── .git/               # Git directory (hidden)
-├── .gitignore          # Files and folders for Git to ignore
-├── build_and_deploy.sh # Script to setup and run the application
-├── INSTRUCTIONS.md     # This file
-├── README.md           # A brief project overview
-├── deployment.log      # Log file for the build script
-├── requirements.txt    # Python dependencies
+### 1. Environment Preparation
+
+The `build_and_deploy.sh` script handles everything:
+
+```bash
+bash build_and_deploy.sh
+```
+
+**What it does:**
+- Creates Python virtual environment in `venv/`
+- Installs dependencies: `requests`, `beautifulsoup4`, `tqdm`, `lxml`
+- Runs the scraper with default settings
+- Creates output summary and logs
+
+### 2. Manual Setup (Optional)
+
+If you prefer manual control:
+
+```bash
+# Create virtual environment
+python3 -m venv venv
+source venv/bin/activate
+
+# Install dependencies
+pip3 install -r requirements.txt
+
+# Run scraper
+python3 scraper/scraper.py
+```
+
+---
+
+## Output Formats and Structure
+
+### Directory Structure
+```
+scraper/output/
+├── json/                    # Individual JSON files
+│   ├── index.json           # Homepage
+│   ├── User_s_Guide.json    # User guide page
+│   ├── Configuration.json   # Configuration page
+│   └── ...                  # All other pages
+├── text/                    # Individual text files
+│   ├── index.txt
+│   ├── User_s_Guide.txt
+│   └── ...
+├── all_content.json         # Combined JSON (for RAG)
+└── all_content.txt          # Combined text file
+```
+
+### JSON Format (Structured)
+
+Each JSON file contains:
+
+```json
+{
+  "url": "https://wiki.pmease.com/display/QB14/Configuration",
+  "title": "Configuration Guide",
+  "breadcrumb": ["Home", "QuickBuild", "User Guide", "Configuration"],
+  "full_text": "Complete page content as plain text...",
+  "sections": [
+    {
+      "header": "Build Configuration",
+      "content": "Content about build configuration..."
+    },
+    {
+      "header": "Step Configuration", 
+      "content": "Content about step configuration..."
+    }
+  ],
+  "links": [
+    "https://wiki.pmease.com/display/QB14/Build+Steps",
+    "https://wiki.pmease.com/display/QB14/Triggers"
+  ]
+}
+```
+
+### Text Format (Simple)
+
+Each text file contains:
+```
+Title: Configuration Guide
+URL: https://wiki.pmease.com/display/QB14/Configuration
+Breadcrumb: Home > QuickBuild > User Guide > Configuration
+
+Complete page content as plain text...
+```
+
+---
+
+## Advanced Usage
+
+### Command Line Options
+
+```bash
+# Test with single page
+python3 scraper/scraper.py --single --url https://wiki.pmease.com/display/QB14
+
+# Limit pages (for testing)
+python3 scraper/scraper.py --max_pages 5
+
+# Custom output location
+python3 scraper/scraper.py --output /path/to/custom/output
+
+# Start from specific URL
+python3 scraper/scraper.py --url https://wiki.pmease.com/display/QB14/User+Guide
+```
+
+### Customizing the Scraper
+
+Key configuration in `scraper/scraper.py`:
+
+```python
+# Change base URL
+BASE_URL = "https://wiki.pmease.com/display/QB14"
+
+# Change output directory
+OUTPUT_DIR = "scraper/output"
+
+# Modify request delay (be respectful to servers)
+time.sleep(1)  # 1 second between requests
+```
+
+---
+
+## RAG Integration Guide
+
+### Using the Combined JSON File
+
+The `all_content.json` file is ready for RAG systems:
+
+```python
+import json
+
+# Load the scraped documentation
+with open('scraper/output/all_content.json', 'r') as f:
+    docs = json.load(f)
+
+# Each document has:
+for doc in docs:
+    print(f"Title: {doc['title']}")
+    print(f"URL: {doc['url']}")
+    print(f"Sections: {len(doc['sections'])}")
+    
+    # Use sections for chunking
+    for section in doc['sections']:
+        print(f"  - {section['header']}: {len(section['content'])} chars")
+```
+
+### Recommended RAG Architecture
+
+1. **Document Chunking**: Use the `sections` array for natural chunks
+2. **Metadata**: Include `title`, `breadcrumb`, and `url` for context
+3. **Embeddings**: Create embeddings for each section's content
+4. **Retrieval**: Use semantic search on section content
+5. **Context**: Provide breadcrumb and URL for source attribution
+
+### Example with LangChain
+
+```python
+from langchain.schema import Document
+from langchain.embeddings import OpenAIEmbeddings
+from langchain.vectorstores import Chroma
+
+# Convert to LangChain documents
+documents = []
+for page in json_data:
+    for section in page['sections']:
+        doc = Document(
+            page_content=section['content'],
+            metadata={
+                'title': page['title'],
+                'section': section['header'],
+                'url': page['url'],
+                'breadcrumb': ' > '.join(page['breadcrumb'])
+            }
+        )
+        documents.append(doc)
+
+# Create vector store
+embeddings = OpenAIEmbeddings()
+vectorstore = Chroma.from_documents(documents, embeddings)
+```
+
+---
+
+## Developer Guide
+
+### Project Architecture
+
+```
 ├── scraper/
-│   ├── init.py     # Makes the scraper directory a Python package
-│   ├── scraper.py      # The main scraping script
-│   └── output/         # Where the scraped text files are saved (ignored by Git)
-└── venv/               # Python virtual environment (ignored by Git)
+│   ├── __init__.py          # Package marker
+│   └── scraper.py           # Main scraper class and logic
+├── build_and_deploy.sh      # Build automation
+├── requirements.txt         # Dependencies
+├── deployment.log           # Runtime logs
+└── venv/                    # Virtual environment (created)
+```
 
+### Key Classes and Functions
 
-#### Code Explanation (`scraper/scraper.py`)
+**QuickBuildScraper Class:**
+- `__init__()`: Setup directories and session
+- `is_valid_url()`: Filter valid documentation URLs
+- `extract_content()`: Parse HTML and extract structured content
+- `scrape_page()`: Scrape single page with error handling
+- `recursive_scrape()`: Crawl entire documentation
+- `create_combined_output()`: Generate combined files
 
-* **`requests`:** This library is used to send HTTP requests to the website to download the page content.
-* **`BeautifulSoup`:** This library is used to parse the HTML content of the pages. It allows us to easily navigate the HTML structure and find the specific data we need.
-* **`BASE_URL`:** This is the starting point for our scraper and the boundary. The scraper will not visit pages outside of this URL path.
-* **`scrape_page(url)` function:** This is the main recursive function. It takes a URL, scrapes its content, saves it, and then finds all the valid links on that page to scrape next.
-* **Content Extraction:** The line `soup.find('div', id='main-content')` is crucial. It targets the specific `div` element on the page that contains the main article content. This is a more robust way to get the data you want instead of just grabbing all text on the page.
+**Main Function:**
+- Argument parsing
+- Error handling with detailed output
+- Integration with build system
 
-#### Versioning and Releases (GitHub Best Practices)
+### Adding New Features
 
-* **Commits:** Make small, logical commits. Your commit messages should be clear and concise, explaining *what* changed and *why*.
-* **Branches:** Do not commit directly to the `main` branch. Create a new branch for each new feature or bug fix (e.g., `feature/improve-scraping-logic` or `fix/handle-404-errors`).
-* **Pull Requests (PRs):** When your feature is complete, open a Pull Request to merge your branch into `main`. This allows for code review and discussion before changes are integrated.
-* **Tags and Releases:** When you reach a stable version, create a tag in Git (e.g., `v1.0`). On GitHub, you can create a "Release" from this tag, which can include release notes and packaged files.
+To extend the scraper:
 
-#### Security Considerations
+1. **New Content Types**: Modify `extract_content()` method
+2. **Different Output Formats**: Add new methods to `QuickBuildScraper`
+3. **Enhanced Filtering**: Update `is_valid_url()` method
+4. **Progress Tracking**: Extend tqdm usage in `recursive_scrape()`
 
-* **Dependabot:** Enable Dependabot on your GitHub repository. It will automatically scan your `requirements.txt` file for known vulnerabilities and create Pull Requests to update your dependencies.
-* **Rate Limiting:** For this project, scraping a documentation site is unlikely to cause issues. However, be aware that aggressive scraping can overload a website's server. A more advanced scraper might include delays between requests.
-* **robots.txt:** While not implemented in this simple solution, it's good practice to check a website's `robot
+### Testing Changes
+
+```bash
+# Test single page
+python3 scraper/scraper.py --single --url https://wiki.pmease.com/display/QB14
+
+# Test limited crawl
+python3 scraper/scraper.py --max_pages 3
+
+# Full test
+bash build_and_deploy.sh
+```
+
+---
+
+## Troubleshooting
+
+### Common Issues
+
+**1. No output files created**
+- Check `deployment.log` for errors
+- Verify internet connection
+- Confirm QuickBuild wiki is accessible
+
+**2. Incomplete scraping**
+- Website may have changed structure
+- Rate limiting by server
+- Network timeouts
+- Check logs for specific URLs that failed
+
+**3. Python/dependency errors**
+- Ensure Python 3.6+ is installed
+- Virtual environment activation failed
+- Check `pip3 install -r requirements.txt` output in logs
+
+**4. Permission errors**
+- Make build script executable: `chmod +x build_and_deploy.sh`
+- Check write permissions in output directory
+
+### Debugging Steps
+
+1. **Check logs first**: `tail -f deployment.log`
+2. **Test single page**: `python3 scraper/scraper.py --single`
+3. **Verify dependencies**: `pip3 list`
+4. **Test network**: `curl https://wiki.pmease.com/display/QB14`
+
+### Performance Tuning
+
+**For faster scraping:**
+- Reduce delay: Change `time.sleep(1)` to `time.sleep(0.5)` 
+- Increase timeout: Change `timeout=10` to `timeout=30`
+- Use `--max_pages` for testing
+
+**For more respectful scraping:**
+- Increase delay: Change to `time.sleep(2)`
+- Add random delays: `time.sleep(1 + random.random())`
+
+### Log Analysis
+
+Key log entries to watch:
+```
+ERROR scraping [URL]: [details]  # Failed page
+Scraping: [URL]                  # Current page  
+Scraped X pages.                 # Final count
+SUCCESS: Combined output files   # Completion
+```
+
+---
+
+## Next Steps: Building an Interactive Agent
+
+With the scraped documentation, you can now:
+
+### 1. Simple Text Search Agent
+```python
+# Load combined text
+with open('scraper/output/all_content.txt', 'r') as f:
+    docs = f.read()
+
+# Simple keyword search
+def search_docs(query):
+    lines = docs.split('\n')
+    results = [line for line in lines if query.lower() in line.lower()]
+    return results[:10]  # Top 10 matches
+```
+
+### 2. Vector-Based RAG Agent
+```python
+# Using the JSON structure for better context
+import json
+from sentence_transformers import SentenceTransformer
+
+# Load structured data
+with open('scraper/output/all_content.json', 'r') as f:
+    docs = json.load(f)
+
+# Create embeddings for each section
+model = SentenceTransformer('all-MiniLM-L6-v2')
+sections = []
+embeddings = []
+
+for page in docs:
+    for section in page['sections']:
+        sections.append({
+            'content': section['content'],
+            'title': page['title'],
+            'section_header': section['header'],
+            'url': page['url']
+        })
+        embeddings.append(model.encode(section['content']))
+```
+
+### 3. Full RAG Pipeline
+- **Retrieval**: Use vector similarity for relevant sections
+- **Augmentation**: Combine multiple relevant sections
+- **Generation**: Use LLM (OpenAI, local model) to generate answers
+
+### Example Questions the Agent Should Handle
+- "How do I add a step to an existing configuration?"
+- "What are the different types of build triggers?"
+- "How do I set up email notifications for failed builds?"
+- "What's the difference between build configurations and build steps?"
+
+---
+
+## Contributing
+
+### Code Style
+- Follow existing patterns in `scraper.py`
+- Add error handling for new features  
+- Update documentation for changes
+- Test with `--single` before full runs
+
+### Git Workflow
+1. Create feature branch: `git checkout -b feature/enhancement-name`
+2. Make changes and test
+3. Update documentation
+4. Commit with clear messages
+5. Create pull request
+
+### Release Process
+1. Test full scraping run
+2. Verify all output files created
+3. Update version documentation
+4. Tag release: `git tag v1.1.0`
+
+---
+
+## Security and Best Practices
+
+### Web Scraping Ethics
+- Respects robots.txt (check manually)
+- 1-second delay between requests
+- Handles errors gracefully
+- Only scrapes documentation pages
+
+### Data Privacy
+- No user data collected
+- Only public documentation
+- Local storage only
+- No external data transmission
+
+### Maintenance
+- Monitor QuickBuild site changes
+- Update selectors if HTML structure changes
+- Keep dependencies updated
+- Regular testing with `--single` mode
+
+---
+
+## Version History
+
+### v1.1.0 (Enhanced Version)
+- Added structured JSON output
+- Implemented section extraction  
+- Added combined output files
+- Enhanced error handling
+- Added progress tracking
+- RAG-ready output format
+
+### v1.0.0 (Original Version)
+- Basic text scraping
+- Simple output structure
+- Manual dependency management
