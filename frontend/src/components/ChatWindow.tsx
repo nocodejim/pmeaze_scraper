@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ChatMessage, MessageSender, Source } from '../types/chat';
 import * as api from '../services/api';
+import { APIError } from '../types/api'; // Added APIError
 import ChatInput from './ChatInput';
 import MessageList from './MessageList';
 import { RAGQueryRequest } from '../types/api';
@@ -16,6 +17,7 @@ const welcomeMessage: ChatMessage = {
 const ChatWindow: React.FC = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([welcomeMessage]);
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const [chatError, setChatError] = useState<string | null>(null); // Added chatError state
   const queryClient = useQueryClient();
 
   // Load session from localStorage on mount
@@ -81,19 +83,27 @@ const ChatWindow: React.FC = () => {
       }
     },
     onError: (error) => {
-      console.error('Error asking question:', error);
-      const errorMessage: ChatMessage = {
-        id: `error_${Date.now()}`,
-        content: 'Sorry, I encountered an error processing your question. Please try again.',
-        sender: 'ai',
-        timestamp: new Date(),
-      };
-      setMessages(prev => [...prev, errorMessage]);
+      const apiErr = error as APIError;
+      setChatError(apiErr.message || 'An unexpected error occurred while fetching the answer.');
+      // Optionally, still add a generic error message to the chat list, or rely on ChatInput display
+      console.error('Error asking question:', apiErr);
+      // If you want to keep the error message in the chat list as well:
+      // const errorMessageInChat: ChatMessage = {
+      //   id: `error_${Date.now()}`,
+      //   content: apiErr.message || 'Sorry, I encountered an error. Please try again.',
+      //   sender: 'ai',
+      //   timestamp: new Date(),
+      // };
+      // setMessages(prev => [...prev, errorMessageInChat]);
+    },
+    onMutate: () => {
+      setChatError(null); // Clear previous errors when a new mutation starts
     }
   });
 
   const handleSendMessage = (content: string) => {
-    // Add user message immediately (optimistic update)
+    setChatError(null); // Clear previous errors on new send attempt
+
     const userMessage: ChatMessage = {
       id: `user_${Date.now()}`,
       content,
@@ -102,25 +112,66 @@ const ChatWindow: React.FC = () => {
     };
     
     setMessages(prev => [...prev, userMessage]);
+    
+    const loadingMessageId = `ai_loading_${Date.now()}`;
+    const aiLoadingMessage: ChatMessage = {
+      id: loadingMessageId,
+      content: "Assistant is thinking...",
+      sender: 'ai',
+      timestamp: new Date(),
+      isLoading: true,
+    };
+    setMessages(prev => [...prev, aiLoadingMessage]);
 
-    // Create session if none exists
+    const mutationPayload = {
+      question: content,
+      session_id: sessionId, // Will be null if no session, backend handles new session if ID is null/missing
+      top_k: 3
+    };
+
+    const mutationOptions = {
+      onSuccess: (response: api.RAGResponse) => {
+        setMessages(prev => prev.filter(msg => msg.id !== loadingMessageId));
+        const aiResponseMessage: ChatMessage = {
+          id: `ai_${Date.now()}`,
+          content: response.answer,
+          sender: 'ai',
+          timestamp: new Date(),
+          confidence: response.confidence,
+          sources: response.sources
+        };
+        setMessages(prev => [...prev, aiResponseMessage]);
+        if (response.session_id && !sessionId) {
+          setSessionId(response.session_id);
+          localStorage.setItem('chat_session_id', response.session_id);
+        }
+        if (response.session_id || sessionId) {
+          queryClient.invalidateQueries({ queryKey: ['session-history', response.session_id || sessionId] });
+        }
+      },
+      onError: (error: Error) => {
+        setMessages(prev => prev.filter(msg => msg.id !== loadingMessageId));
+        const apiErr = error as APIError;
+        setChatError(apiErr.message || 'An unexpected error occurred while fetching the answer.');
+        // The existing onError in askQuestionMutation already handles console.error
+      }
+    };
+
     if (!sessionId) {
       createSessionMutation.mutate({}, {
-        onSuccess: (response) => {
-          askQuestionMutation.mutate({
-            question: content,
-            session_id: response.id,
-            top_k: 3
-          });
+        onSuccess: (sessionResponse) => {
+          setSessionId(sessionResponse.id);
+          localStorage.setItem('chat_session_id', sessionResponse.id);
+          askQuestionMutation.mutate({ ...mutationPayload, session_id: sessionResponse.id }, mutationOptions);
+        },
+        onError: (error) => {
+          setMessages(prev => prev.filter(msg => msg.id !== loadingMessageId));
+          const apiErr = error as APIError;
+          setChatError(apiErr.message || 'Failed to create a session.');
         }
       });
     } else {
-      // Ask question with existing session
-      askQuestionMutation.mutate({
-        question: content,
-        session_id: sessionId,
-        top_k: 3
-      });
+      askQuestionMutation.mutate({ ...mutationPayload, session_id: sessionId }, mutationOptions);
     }
   };
 
@@ -135,6 +186,7 @@ const ChatWindow: React.FC = () => {
       <ChatInput 
         onSendMessage={handleSendMessage} 
         disabled={askQuestionMutation.isPending || createSessionMutation.isPending}
+        error={chatError} // Pass down the error message
       />
     </div>
   );

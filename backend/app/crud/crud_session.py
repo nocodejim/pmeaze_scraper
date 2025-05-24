@@ -48,14 +48,14 @@ def create_message(
     session_id: str, 
     message_type: MessageTypeEnum, 
     content: str,
-    metadata: Optional[dict] = None
+    message_metadata: Optional[dict] = None
 ) -> MessageTable:
     """Create a new message in a session."""
     message = MessageTable(
         session_id=session_id,
         type=message_type,
         content=content,
-        metadata=json.dumps(metadata) if metadata else None
+        message_metadata=json.dumps(message_metadata) if message_metadata else None
     )
     db.add(message)
     db.commit()
@@ -73,7 +73,7 @@ def get_session_history(db: Session, session_id: str) -> Optional[SessionHistory
     
     message_list = []
     for msg in messages:
-        metadata = json.loads(msg.metadata) if msg.metadata else None
+        metadata = json.loads(msg.message_metadata) if msg.message_metadata else None
         message_list.append(MessageBase(
             id=msg.id,
             type=msg.type.value,

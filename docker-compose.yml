@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - ./quickbuild_rag.db:/app/quickbuild_rag.db 
+      - ./scraper/output:/app/scraper/output # Mount RAG data
+    env_file:
+      - ./backend/.env
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "5173:80" # Vite default dev port is 5173, Nginx in container serves on 80
+    volumes:
+      - ./frontend/src:/app/src # For HMR if Vite dev server runs in container
+                               # Note: The current frontend Dockerfile is for production build.
+                               # For dev, Vite dev server should run directly.
+                               # This volume mount helps if we adjust Dockerfile for dev.
+    env_file:
+      - ./frontend/.env
+    depends_on:
+      - backend

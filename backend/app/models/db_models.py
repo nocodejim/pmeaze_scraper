@@ -24,5 +24,5 @@ class MessageTable(SQLModel, table=True):
     session_id: str = Field(foreign_key="sessions.id")
     type: MessageTypeEnum
     content: str
-    metadata: Optional[str] = None  # JSON string
+    message_metadata: Optional[str] = None  # JSON string
     created_at: datetime = Field(default_factory=datetime.now)

@@ -14,6 +14,7 @@ export interface ChatMessage {
   timestamp: Date;
   confidence?: number;
   sources?: Source[];
+  isLoading?: boolean; // Added for pending AI messages
 }
 
 export interface Session {

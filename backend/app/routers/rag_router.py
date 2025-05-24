@@ -3,9 +3,11 @@ from uuid import UUID
 from fastapi import APIRouter, HTTPException, Depends, status
 from typing import List
 from sqlmodel import Session
+from datetime import datetime
 
 from app.models.rag_models import RAGQueryRequest, RAGResponse, SourceDocument
 from app.models.db_models import MessageTypeEnum
+from app.models.system_models import ErrorResponse, ErrorDetail
 from app.services.rag_service import RAGService
 from app.core.config import settings
 from app.db.database import get_session
@@ -71,13 +73,19 @@ async def ask_question(
                 session_id=session_id,
                 message_type=MessageTypeEnum.answer,
                 content=response.answer,
-                metadata={"confidence": response.confidence, "sources": len(sources)}
+                message_metadata={"confidence": response.confidence, "sources": len(sources)}
             )
         
         return response
         
     except Exception as e:
+        error_content = ErrorDetail(
+            type="internal_server_error",
+            message="An unexpected error occurred while processing your question.",
+            details=str(e),
+            timestamp=datetime.utcnow()
+        )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error processing question: {str(e)}"
+            detail=ErrorResponse(error=error_content).model_dump()
         )

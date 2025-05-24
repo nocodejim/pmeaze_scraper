@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./quickbuild_rag.db:/app/quickbuild_rag.db
+      - ./scraper/output:/app/scraper/output # Mount RAG data
+    env_file:
+      - ./backend/.env
+    # Default CMD from Dockerfile is used: uvicorn app.main:app --host 0.0.0.0 --port 8000
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "80:80" # Standard HTTP port
+    # env_file:
+    #   - ./frontend/.env # Env vars for frontend are typically build-time
+    depends_on:
+      - backend

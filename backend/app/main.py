@@ -1,5 +1,9 @@
-from fastapi import FastAPI, HTTPException
-from starlette.responses import JSONResponse
+import logging
+import time
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.middleware.cors import CORSMiddleware # Added
+from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseCallNext
+from starlette.responses import Response, JSONResponse
 from contextlib import asynccontextmanager
 
 from app.routers import rag_router, session_router, system_router
@@ -13,7 +17,37 @@ async def lifespan(app: FastAPI):
     yield
     # Shutdown (if needed)
 
+# Basic logging configuration
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
 app = FastAPI(title=settings.PROJECT_NAME, lifespan=lifespan)
+
+# CORS Middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.CORS_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Request Logging Middleware
+class RequestLoggingMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next: RequestResponseCallNext) -> Response:
+        start_time = time.time()
+        
+        response = await call_next(request)
+        
+        process_time = time.time() - start_time
+        logger.info(
+            f"Processed: {request.method} {request.url.path} - Status: {response.status_code} - Client: {request.client.host} - Time: {process_time:.4f}s"
+        )
+        
+        return response
+
+# Add the middleware to the FastAPI application
+app.add_middleware(RequestLoggingMiddleware)
 
 app.include_router(rag_router, prefix=settings.API_V1_STR, tags=["RAG"])
 app.include_router(session_router, prefix=settings.API_V1_STR, tags=["Sessions"])

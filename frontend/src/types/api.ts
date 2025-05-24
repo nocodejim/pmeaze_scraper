@@ -42,3 +42,33 @@ export interface SessionHistoryResponse {
   session_id: string;
   messages: MessageBase[];
 }
+
+// --- Standardized Error Types ---
+
+export interface BackendErrorDetail {
+  type: string;
+  message: string;
+  details?: string;
+  timestamp: string; 
+}
+
+export interface BackendErrorResponse {
+  error: BackendErrorDetail;
+}
+
+// Custom Error class for frontend
+export class APIError extends Error {
+  status: number;
+  type?: string;
+  details?: string;
+
+  constructor(message: string, status: number, type?: string, details?: string) {
+    super(message);
+    this.name = 'APIError';
+    this.status = status;
+    this.type = type;
+    this.details = details;
+    // Set the prototype explicitly for correct instanceof checks
+    Object.setPrototypeOf(this, APIError.prototype);
+  }
+}

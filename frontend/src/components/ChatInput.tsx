@@ -1,11 +1,14 @@
 import React, { useState, KeyboardEvent } from 'react';
 
+import React, { useState, KeyboardEvent } from 'react';
+
 interface ChatInputProps {
   onSendMessage: (message: string) => void;
   disabled?: boolean;
+  error?: string | null; // Added error prop
 }
 
-const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, disabled = false }) => {
+const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, disabled = false, error = null }) => {
   const [message, setMessage] = useState('\);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -40,9 +43,12 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, disabled = false }
           disabled={!message.trim() || disabled}
           className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
         >
-          Send
+          {disabled ? 'Sending...' : 'Send'}
         </button>
       </div>
+      {error && (
+        <p className="mt-2 text-sm text-red-600">{error}</p>
+      )}
     </form>
   );
 };

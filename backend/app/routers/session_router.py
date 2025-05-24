@@ -1,8 +1,11 @@
 from fastapi import APIRouter, HTTPException, Depends, status
+from fastapi import APIRouter, HTTPException, Depends, status
 from sqlmodel import Session
 from typing import List
+from datetime import datetime
 
 from app.models.session_models import SessionCreateRequest, SessionResponse, SessionHistoryResponse
+from app.models.system_models import ErrorResponse, ErrorDetail # Added
 from app.db.database import get_session
 from app.crud.crud_session import create_session, get_session_by_id, delete_session, get_session_history
 
@@ -30,9 +33,15 @@ async def get_session_history_endpoint(
     """Get chat history for a session."""
     history = get_session_history(db, session_id)
     if not history:
+        error_content = ErrorDetail(
+            type="not_found",
+            message="The requested session history was not found.",
+            details=f"Session with ID '{session_id}' not found or has no history.",
+            timestamp=datetime.utcnow()
+        )
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Session not found"
+            detail=ErrorResponse(error=error_content).model_dump()
         )
     return history
 
@@ -44,8 +53,14 @@ async def delete_session_endpoint(
     """Delete a chat session and its history."""
     success = delete_session(db, session_id)
     if not success:
+        error_content = ErrorDetail(
+            type="not_found",
+            message="The session to be deleted was not found.",
+            details=f"Session with ID '{session_id}' not found and could not be deleted.",
+            timestamp=datetime.utcnow()
+        )
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Session not found"
+            detail=ErrorResponse(error=error_content).model_dump()
         )
     return {"message": "Session deleted successfully"}
