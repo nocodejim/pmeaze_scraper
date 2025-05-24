@@ -1,8 +1,9 @@
 import logging
 import time
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.middleware.cors import CORSMiddleware # Added
-from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseCallNext
+from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware # RequestResponseCallNext removed
+from starlette.types import ASGIApp # Added ASGIApp
 from starlette.responses import Response, JSONResponse
 from contextlib import asynccontextmanager
 
@@ -34,7 +35,7 @@ app.add_middleware(
 
 # Request Logging Middleware
 class RequestLoggingMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: Request, call_next: RequestResponseCallNext) -> Response:
+    async def dispatch(self, request: Request, call_next: ASGIApp) -> Response: # Type hint updated
         start_time = time.time()
         
         response = await call_next(request)
