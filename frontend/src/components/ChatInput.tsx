@@ -9,13 +9,13 @@ interface ChatInputProps {
 }
 
 const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, disabled = false, error = null }) => {
-  const [message, setMessage] = useState('\);
+  const [message, setMessage] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (message.trim() && !disabled) {
       onSendMessage(message.trim());
-      setMessage('\);
+      setMessage('');
     }
   };
 
