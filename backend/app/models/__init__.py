@@ -1,7 +1,7 @@
 from .rag_models import RAGQueryRequest, RAGResponse, SourceDocument
 from .db_models import SessionTable, MessageTable, MessageTypeEnum
 from .session_models import SessionCreateRequest, SessionResponse, SessionHistoryResponse, MessageBase
-from .system_models import HealthResponse, ExamplesResponse, ExampleQuestion
+from .system_models import DetailedHealthStatus, ExamplesResponse, ExampleQuestion, SubsystemStatus # MODIFIED
 
 __all__ = [
     "RAGQueryRequest", 
@@ -14,7 +14,8 @@ __all__ = [
     "SessionResponse", 
     "SessionHistoryResponse",
     "MessageBase",
-    "HealthResponse",
+    "DetailedHealthStatus", # MODIFIED
     "ExamplesResponse", 
-    "ExampleQuestion"
+    "ExampleQuestion",
+    "SubsystemStatus" # ADDED
 ]
